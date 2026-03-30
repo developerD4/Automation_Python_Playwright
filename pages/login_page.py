@@ -7,8 +7,6 @@ class LoginPage:
         self.login_button = page.locator("button[type='submit']")
         # Dashboard selectors
         self.dashboard_nav = page.locator("h3").first
-        # Error message selectors
-        self.error_message = page.locator(".toast-message, .alert-danger, [role='alert'], .error-msg")
 
     def navigate(self, url):
         print(f"Navigating to: {url}")
@@ -28,11 +26,22 @@ class LoginPage:
         
         print("Clicking Sign In button...")
         self.login_button.click()
+        try:
+            toast = self.page.locator("hot-toast")
+            toast.wait_for(state="visible", timeout=500)
+            toast_msg = toast.text_content()
+            print(f"Toast message: {toast_msg}")
+            return toast_msg
+        except Exception:
+            self.page.wait_for_load_state("load")
+            heading = self.get_environment_heading()
+            return heading
 
     def get_environment_heading(self):
         # Wait for dashboard content
         print("Waiting for dashboard element...")
         self.dashboard_nav.wait_for(state='visible', timeout=10000)
+        self.page.wait_for_timeout(10000)
         return self.dashboard_nav.inner_text()
 
     def login(self, username, password):
